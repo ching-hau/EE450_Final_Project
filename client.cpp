@@ -15,23 +15,27 @@
 #include <sys/wait.h>
 using namespace std;
 
-#define MAXBUFSIZE 1024
-#define TCP_PORT "25653"
-#define FAIL -1
-#define LOCAL_HOST "127.0.0.1"
 
-char query_buf[MAXBUFSIZE];
-char query_result__buf[MAXBUFSIZE];
-char buf[MAXBUFSIZE];
-char recv_buf[MAXBUFSIZE];
-int addr_info_result, client_send_result;
-int client_recv_result;
+#define LOCAL_HOST "127.0.0.1"
+#define TCP_PORT "25653"
+#define BUFSIZE 1024
+#define FAIL -1
+
+
+int server_addr_info;
+int client_send_result, client_recv_result;
 int client_tcp_socket;
+int client_tcp_port;
 struct addrinfo client_addr_cond, *client_addr_result;
+char send_user_info_buf[BUFSIZE];
+char recv_user_info_buf[BUFSIZE];
+char send_course_info_buf[BUFSIZE];
+char recv_course_info_buf[BUFSIZE];
 string username;
 string password;
 string course;
 string query_item;
+
 
 
 void create_client_tcp_connection() {
@@ -39,13 +43,16 @@ void create_client_tcp_connection() {
     client_addr_cond.ai_family = AF_UNSPEC;
     client_addr_cond.ai_socktype = SOCK_STREAM;
     client_addr_cond.ai_flags = AI_PASSIVE;
-    addr_info_result = getaddrinfo(LOCAL_HOST, TCP_PORT, &client_addr_cond, &client_addr_result);
-    if(addr_info_result != 0) {
+    server_addr_info = getaddrinfo(LOCAL_HOST, TCP_PORT, &client_addr_cond, &client_addr_result);
+
+    if(server_addr_info != 0) {
         cout << "ERROR: serverM fails to get address info" << endl;
         return;
     }
+
     client_tcp_socket = socket(client_addr_result -> ai_family, client_addr_result -> ai_socktype, client_addr_result -> ai_protocol);
     cout << username << " sent an authentication request to the main server." << endl;
+
     if(client_tcp_socket == FAIL) {
         perror("ERROR: serverM fails to create socket for client");
         exit(1);
@@ -56,6 +63,8 @@ void create_client_tcp_connection() {
         perror("client: connect");
         exit(1);
     }    
+    client_tcp_port = ((struct sockaddr_in*) (void*) client_addr_result->ai_addr)->sin_port;
+
 }
 
 string get_user_info() {
@@ -77,62 +86,56 @@ string get_user_query() {
     str = course + " " + query_item;
     return str;
 }
-// void write_into_buf(string str, char * buf) {
-//     strncpy(buf, str.c_str(), MAXBUFSIZE);
-// }
 
 int main(int argc, char *argv[]) {
     cout << "The client is up and running." << endl;
     int attempt = 3;
     string user_info = get_user_info();
-    strncpy(buf, user_info.c_str(), MAXBUFSIZE);
-    // write_into_buf(user_info, buf);
+    strncpy(send_user_info_buf, user_info.c_str(), BUFSIZE);
     create_client_tcp_connection();
+
+    cout << "here " <<  cur << endl; 
 
     while(attempt >= 0) {
         attempt --;
         if(attempt < 2) {
             user_info = get_user_info();
-            strncpy(buf, user_info.c_str(), MAXBUFSIZE);
-            // write_into_buf(user_info, buf);
+            strncpy(send_user_info_buf, user_info.c_str(), BUFSIZE);
         }
-        client_send_result = send(client_tcp_socket, buf, sizeof(buf), 0);
+        client_send_result = send(client_tcp_socket, send_user_info_buf, sizeof(send_user_info_buf), 0);
         if(client_send_result == FAIL) {
             perror("ERROR: client fails to send");
         }
 
-        client_recv_result = recv(client_tcp_socket, recv_buf, MAXBUFSIZE, 0);
+        client_recv_result = recv(client_tcp_socket, recv_user_info_buf, BUFSIZE, 0);
 
-        if(strcmp(recv_buf, "0") == 0) {
+        if(strcmp(recv_user_info_buf, "0") == 0) {
             while(true) {
                 string query_info = get_user_query();
-                strncpy(query_buf, query_info.c_str(), MAXBUFSIZE);
-                send(client_tcp_socket, query_buf, sizeof(buf), 0);
+                strncpy(send_course_info_buf, query_info.c_str(), BUFSIZE);
+                send(client_tcp_socket, send_course_info_buf, sizeof(send_user_info_buf), 0);
                 cout << username << " sent a request to the main server." << endl;
-                recv(client_tcp_socket, query_result__buf, MAXBUFSIZE, 0);
-                cout << "The client received the response from the Main server using TCP over port " << TCP_PORT << ".";
-                cout << query_result__buf << endl;
+                recv(client_tcp_socket, recv_course_info_buf, BUFSIZE, 0);
+                cout << "The client received the response from the Main server using TCP over port " << client_tcp_port << ".";
+                cout << recv_course_info_buf << endl;
                 cout << "-----Start a new request-----" << endl;
             }
         }
         else {
-            // cout << "currrent status: " << recv_buf << endl;
             if(attempt == -1) {
                 cout << "Authentication Failed for 3 attempts. Client will shut down." << endl;
                 exit(1);
             }
             
-            cout << username << " received the result of authentication using TCP over port " << TCP_PORT << ". Authentication failed: ";
-            if(strcmp(recv_buf, "1") == 0) {
+            cout << username << " received the result of authentication using TCP over port " << client_tcp_port << ". Authentication failed: ";
+            if(strcmp(recv_user_info_buf, "1") == 0) {
                 cout << "Password does not match" << endl;
             }
             else {
                 cout << "Username Does not exist" << endl;
             }
-            memset(&recv_buf, 0, sizeof(recv_buf));
+            memset(&recv_user_info_buf, 0, sizeof(recv_user_info_buf));
             cout << "Attempts remaining:" << attempt << endl;
-
-
         }
     }
 }

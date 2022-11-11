@@ -46,7 +46,7 @@ void error_check(int status, string msg) {
     }
 }
 
-void create_server_udpc_socket() {
+void create_serveree_udp_socket() {
     memset(&serverEE_addr_cond, 0, sizeof serverEE_addr_cond);
     serverEE_addr_cond.ai_family = AF_UNSPEC;
     serverEE_addr_cond.ai_socktype = SOCK_DGRAM;
@@ -61,7 +61,8 @@ void create_server_udpc_socket() {
     error_check(udp_bind_result, SERVEREE_BIND_ERROR);
 
     freeaddrinfo(serverEE_addr_result);
-    cout << "The ServerC is up and running using UDP on port " << EE_UDP_PORT << " ." << endl;
+    cout << "The Server EE is up and running using UDP on port " << EE_UDP_PORT << "." << endl;
+
 }
 
 string inspect_course_info(char* buf) {
@@ -105,8 +106,7 @@ string inspect_course_info(char* buf) {
 
 int main() {
     
-    create_server_udpc_socket();
-    cout << "The Server EE is up and running using UDP on port " << EE_UDP_PORT << "." << endl;
+    create_serveree_udp_socket();
     while(true) {
         addr_len = sizeof(their_addr);
         serverEE_recv_result = recvfrom(serverEE_udp_socket, buf, MAXBUFSIZE - 1, 0, (struct sockaddr *) &their_addr, &addr_len);

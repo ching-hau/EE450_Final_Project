@@ -46,7 +46,7 @@ void error_check(int status, string msg) {
     }
 }
 
-void create_server_udpc_socket() {
+void create_servercs_udp_socket() {
     memset(&servercs_addr_cond, 0, sizeof servercs_addr_cond);
     servercs_addr_cond.ai_family = AF_UNSPEC;
     servercs_addr_cond.ai_socktype = SOCK_DGRAM;
@@ -61,7 +61,8 @@ void create_server_udpc_socket() {
     error_check(udp_bind_result, SERVERCS_BIND_ERROR);
 
     freeaddrinfo(servercs_addr_result);
-    cout << "The ServerC is up and running using UDP on port " << CS_UDP_PORT << " ." << endl;
+    cout << "The Server CS is up and running using UDP on port " << CS_UDP_PORT << "." << endl;
+
 }
 
 string inspect_course_info(char* buf) {
@@ -104,8 +105,7 @@ string inspect_course_info(char* buf) {
 
 int main() {
     
-    create_server_udpc_socket();
-    cout << "The Server CS is up and running using UDP on port " << CS_UDP_PORT << "." << endl;
+    create_servercs_udp_socket();
     while(true) {
         addr_len = sizeof(their_addr);
         servercs_recv_result = recvfrom(servercs_udp_socket, buf, MAXBUFSIZE - 1, 0, (struct sockaddr *) &their_addr, &addr_len);

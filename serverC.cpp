@@ -73,7 +73,6 @@ char verify_user_info(char* buf) {
     string password = buf_string.substr(p + 1, buf_string.size() - 1);
     string cred_line;
     ifstream MyReadFile(CREDFILE);
-    cout << buf << endl;
     while(getline(MyReadFile, cred_line)) {
         if(int(cred_line.back()) == 13) {
             cred_line.pop_back();
@@ -82,7 +81,6 @@ char verify_user_info(char* buf) {
         string cur_username = cred_line.substr(0, del_pos);
         string cur_password = cred_line.substr(del_pos + 1, cred_line.length());
         if(cur_username == username) {
-            cout << cur_password << endl;
             if(cur_password == password) {
                 return '0';
             }
@@ -106,11 +104,8 @@ int main() {
             exit(1);
         }
         cout << "The ServerC received an authentication request from the Main Server." << endl;
-        cout << buf << endl;
         verify_result[0] = verify_user_info(buf);
-        cout << "verify_result: " << verify_result << endl;
         serverc_send_result = sendto(serverc_udp_socket, verify_result, MAXBUFSIZE - 1, 0, (struct sockaddr *) &their_addr, addr_len);
-        cout << serverc_send_result << endl;
         cout << "The ServerC finished sending the response to the Main Server." << endl;
     }
 
