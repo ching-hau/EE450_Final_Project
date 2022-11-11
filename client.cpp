@@ -69,9 +69,9 @@ void create_client_tcp_connection() {
 
 string get_user_info() {
     string str;
-    cout <<"Please enter the username: " << endl;
+    cout <<"Please enter the username: ";
     cin >> username;
-    cout << "Please enter the password: " << endl;
+    cout << "Please enter the password: ";
     cin >> password;
     str = username + " " + password;
     return str;    
@@ -79,9 +79,9 @@ string get_user_info() {
 
 string get_user_query() {
     string str;
-    cout << "Please enter the course code to query:" << endl;
+    cout << "Please enter the course code to query: ";
     cin >> course;
-    cout << "Please enter the category (Credit / Professor / Days / CourseName):" << endl;
+    cout << "Please enter the category (Credit / Professor / Days / CourseName): ";
     cin >> query_item;
     str = course + " " + query_item;
     return str;
@@ -93,8 +93,6 @@ int main(int argc, char *argv[]) {
     string user_info = get_user_info();
     strncpy(send_user_info_buf, user_info.c_str(), BUFSIZE);
     create_client_tcp_connection();
-
-    cout << "here " <<  cur << endl; 
 
     while(attempt >= 0) {
         attempt --;

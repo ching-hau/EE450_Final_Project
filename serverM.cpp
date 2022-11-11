@@ -36,7 +36,9 @@ const string TCP_RECV_ERROR = "[ERROR]: serverM fails to receive client";
 const string UDPC_SEND_ERROR = "[ERROR]: serverM fails to send to serverc";
 const string UDPC_RECV_ERROR = "[ERROR]: serverM fails to receive to serverc";
 const string UDPC_SOCKET_ERROR = "[ERROR]: serverM fails to create socket for serverc";
-
+string course;
+string category;
+char *username;
 int server_tcp_socket, tcp_child_socket, serverc_udp_socket;
 int addr_info_result, tcp_bind_result, tcp_listen_result, server_recv_result, server_send_udpc_result, server_recv_udpc_result;
 int server_send_result;
@@ -142,6 +144,14 @@ void error_check(int status, string msg) {
     }
 }
 
+void get_query_info(char* buf) {
+    string buf_string;
+    buf_string.append(buf);
+    int p = buf_string.find(" ");
+    course = buf_string.substr(0, p);
+    category = buf_string.substr(p + 1, buf_string.size() - 1);
+}
+
 int main(void) {
     cout << "The main server is up and running." << endl;
     create_server_tcp_socket();
@@ -162,45 +172,52 @@ int main(void) {
 
         strncpy(encrypted_buf, buf, sizeof(buf));
         encrypt_user_info(encrypted_buf);
-        cout << encrypted_buf << endl;
         strncpy(backup_buf, buf, sizeof(buf));
-        char *username = strtok(backup_buf, " ");
+        username = strtok(backup_buf, " ");
 
         cout << "The main server received the authentication for " << username << " using TCP over port "<< TCP_PORT << "." << endl;
         serverc_addr_len = sizeof(serverc_addr);
         server_send_udpc_result = sendto(serverc_udp_socket, encrypted_buf, MAXBUFSIZE, 0, serverc_addr_result -> ai_addr, serverc_addr_result -> ai_addrlen);
+        cout << "The main server sent an authentication request to serverC." << endl;
         error_check(server_send_udpc_result, UDPC_SEND_ERROR);
 
         
         server_recv_udpc_result = recvfrom(serverc_udp_socket, serverc_buf, MAXBUFSIZE, 0, serverc_addr_result -> ai_addr, &(serverc_addr_result -> ai_addrlen));
         error_check(server_recv_udpc_result, UDPC_RECV_ERROR);
+        cout << "The main server received the result of the authentication request from ServerC using UDP over port " << C_UDP_PORT << "." << endl;
 
         if(strcmp(serverc_buf, "0") != 0) {
             server_send_result = send(tcp_child_socket, serverc_buf, sizeof(serverc_buf), 0);
+            cout << "The main server sent the authentication result to the client." << endl;
             continue;
         }
         else {
             server_send_result = send(tcp_child_socket, serverc_buf, sizeof(serverc_buf), 0);
+            cout << "The main server sent the authentication result to the client." << endl;
             break;
-            // server_recv_result = recv(tcp_child_socket, buf, MAXBUFSIZE, 0);
-            // cout << buf << endl;
         }
         cout << serverc_buf << endl;
     }
 
     while(true) {
         recv(tcp_child_socket, buf, MAXBUFSIZE, 0);
-        cout << "curbuf: " << buf << endl;
+        get_query_info(buf);
+        cout << "The main server received from " << username << "to query course " << course << " about " << category << "." << endl;
         if(buf[0] == 'C' && buf[1] == 'S') {
             sendto(servercs_udp_socket, buf, MAXBUFSIZE, 0, servercs_addr_result -> ai_addr, servercs_addr_result -> ai_addrlen);
+            cout << "The main server sent a request to serverCS." << endl;
             recvfrom(servercs_udp_socket, servercs_buf, MAXBUFSIZE, 0, servercs_addr_result -> ai_addr, &(servercs_addr_result -> ai_addrlen));
+            cout << "The main server received the response from serverCS using UDP over port " << CS_UDP_PORT "." << endl;
             send(tcp_child_socket, servercs_buf, sizeof(servercs_buf), 0);
             cout << servercs_buf << endl;
         }
         else {
             sendto(serveree_udp_socket, buf, MAXBUFSIZE, 0, serveree_addr_result -> ai_addr, serveree_addr_result -> ai_addrlen);
+            cout << "The main server sent a request to serverEE." << endl;
             recvfrom(serveree_udp_socket, serveree_buf, MAXBUFSIZE, 0, serveree_addr_result -> ai_addr, &(serveree_addr_result -> ai_addrlen));
+            cout << "The main server received the response from serverEE using UDP over port " << EE_UDP_PORT "." << endl;
             send(tcp_child_socket, serveree_buf, sizeof(serveree_buf), 0);
+            cout << "The main server sent the query information to the client." << endl;
             cout << serveree_buf << endl;
         }
     }

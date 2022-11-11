@@ -71,6 +71,7 @@ string inspect_course_info(char* buf) {
     int p = buf_string.find(" ");
     course = buf_string.substr(0, p);
     category = buf_string.substr(p + 1, buf_string.size() - 1);
+    cout << "The Server EE received a request from the Main Server about the " << category << " of " << course << "." << endl;
     string cred_line;
     ifstream MyReadFile(CSFILE);
     cout << course << endl;
@@ -87,16 +88,20 @@ string inspect_course_info(char* buf) {
             string cur_coursename = strtok(NULL, ",");
 
             if(category == "Credit") {
-                result = "The Credits of " + course + " " + cur_credit + ".";
+                result = "The Credits of " + course + " is " + cur_credit + ".";
+                cout << "The course information has been found: The " << category << " of " << course << " is " << cur_credit << "." << endl;
             }
             else if(category == "Professor") {
-                result = "The Professor of " + course + " " + cur_professor + ".";
+                result = "The Professor of " + course + " is " + cur_professor + ".";
+                cout << "The course information has been found: The " << category << " of " << course << " is " << cur_professor << "." << endl;
             }
             else if(category == "Days") {
-                result = "The Days of " + course + " " + cur_days + ".";
+                result = "The Days of " + course + " is " + cur_days + ".";
+                cout << "The course information has been found: The " << category << " of " << course << " is " << cur_days << "." << endl;
             }
             else if(category == "CourseName") {
-                result = "The Course Name of " + course + " " + cur_coursename + ".";
+                result = "The Course Name of " + course + " is " + cur_coursename + ".";
+                cout << "The course information has been found: The " << category << " of " << course << " is " << cur_coursename << "." << endl;
             } 
             break;
         }
@@ -111,7 +116,6 @@ int main() {
         addr_len = sizeof(their_addr);
         serverEE_recv_result = recvfrom(serverEE_udp_socket, buf, MAXBUFSIZE - 1, 0, (struct sockaddr *) &their_addr, &addr_len);
         string result = inspect_course_info(buf);
-        cout << "The Server EE received a request from the Main Server about the " << category << " of " << course << "." << endl;
         strncpy(result_buf, result.c_str(), MAXBUFSIZE);
         serverEE_send_result = sendto(serverEE_udp_socket, result_buf, MAXBUFSIZE - 1, 0, (struct sockaddr *) &their_addr, addr_len);
         cout << "The Server EE finished sending the response to the Main Server." << endl;
