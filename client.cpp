@@ -114,7 +114,7 @@ int main(int argc, char *argv[]) {
                 send(client_tcp_socket, send_course_info_buf, sizeof(send_user_info_buf), 0);
                 cout << username << " sent a request to the main server." << endl;
                 recv(client_tcp_socket, recv_course_info_buf, BUFSIZE, 0);
-                cout << "The client received the response from the Main server using TCP over port " << client_tcp_port << ".";
+                cout << "The client received the response from the Main server using TCP over port " << client_tcp_port << "." << endl;
                 cout << recv_course_info_buf << endl;
                 cout << "-----Start a new request-----" << endl;
             }
@@ -125,7 +125,7 @@ int main(int argc, char *argv[]) {
                 exit(1);
             }
             
-            cout << username << " received the result of authentication using TCP over port " << client_tcp_port << ". Authentication failed: ";
+            cout << username << " received the result of authentication using TCP over port " << client_tcp_port << ". Authentication failed: " << endl;
             if(strcmp(recv_user_info_buf, "1") == 0) {
                 cout << "Password does not match" << endl;
             }

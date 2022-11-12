@@ -1,11 +1,11 @@
 serverM: serverM.cpp
-	clang++ serverM.cpp -o serverM
+	g++ -o serverM serverM.cpp
 
 serverEE: serverEE.cpp
-	clang++ serverEE.cpp -o serverEE
+	g++ -o serverEE serverEE.cpp
 
 serverCS: serverCS.cpp
-	clang++ serverCS.cpp -o serverCS
+	g++ -o serverCS serverCS.cpp
 
 client: client.cpp
-	clang++ client.cpp -o client
+	g++ -o client client.cpp
