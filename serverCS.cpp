@@ -76,9 +76,10 @@ string inspect_course_info(char* buf) {
     ifstream MyReadFile(CSFILE);
     string result = "Didn't find the course: " + course;
     while(getline(MyReadFile, cred_line)) {
-        cred_line.pop_back();
-        char *cstr = new char[cred_line.length() + 1];
-        strcpy(cstr, cred_line.c_str());
+        // cred_line.pop_back();
+        string new_string = cred_line.substr(0, cred_line.length() - 1);
+        char *cstr = new char[new_string.length() + 1];
+        strcpy(cstr, new_string.c_str());
         string cur_course = strtok(cstr, ",");
         if(course == cur_course) {
             string cur_credit = strtok(NULL, ",");

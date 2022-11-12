@@ -74,8 +74,8 @@ char verify_user_info(char* buf) {
     string cred_line;
     ifstream MyReadFile(CREDFILE);
     while(getline(MyReadFile, cred_line)) {
-        if(int(cred_line.back()) == 13) {
-            cred_line.pop_back();
+        if(int(cred_line[cred_line.length() - 1]) == 13) {
+            cred_line = cred_line.substr(0, cred_line.length() - 1);
         }
         int del_pos = cred_line.find(",");
         string cur_username = cred_line.substr(0, del_pos);
