@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
     strncpy(send_user_info_buf, user_info.c_str(), BUFSIZE);
     create_client_tcp_connection();
 
-    while(attempt >= 0) {
+    while(attempt > 0) {
         attempt --;
         if(attempt < 2) {
             user_info = get_user_info();
@@ -120,11 +120,6 @@ int main(int argc, char *argv[]) {
             }
         }
         else {
-            if(attempt == -1) {
-                cout << "Authentication Failed for 3 attempts. Client will shut down." << endl;
-                exit(1);
-            }
-            
             cout << username << " received the result of authentication using TCP over port " << client_tcp_port << ". Authentication failed: " << endl;
             if(strcmp(recv_user_info_buf, "1") == 0) {
                 cout << "Password does not match" << endl;
@@ -134,6 +129,11 @@ int main(int argc, char *argv[]) {
             }
             memset(&recv_user_info_buf, 0, sizeof(recv_user_info_buf));
             cout << "Attempts remaining:" << attempt << endl;
+        }
+
+        if(attempt == 0) {
+            cout << "Authentication Failed for 3 attempts. Client will shut down." << endl;
+            close(client_tcp_socket);
         }
     }
 }

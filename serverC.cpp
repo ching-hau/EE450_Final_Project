@@ -110,6 +110,4 @@ int main() {
     }
 
     close(serverc_udp_socket);
-    return 0;
-
 }
